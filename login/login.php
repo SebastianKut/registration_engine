@@ -27,49 +27,55 @@ echo "Error: ".$connection->connect_errno;
     $password = $_POST['password'];
 
     //PREVENT SQL INJECTIONS
-    //sanitize input data first
+    //sanitize input login
     $login = htmlentities($login, ENT_QUOTES, "UTF-8");
-    $password = htmlentities($password, ENT_QUOTES, "UTF-8");
 
-    //'%s' placeholders of a data, sprintf(query, value1, value2)
+    //'%s' placeholders of a data, sprintf(query, value1)
     if ( $result = @$connection->query(
-            sprintf("SELECT * FROM uzytkownicy WHERE user='%s' AND pass='%s'",
-                mysqli_real_escape_string($connection, $login),
-                mysqli_real_escape_string($connection, $password)
+            sprintf("SELECT * FROM uzytkownicy WHERE user='%s'",
+                mysqli_real_escape_string($connection, $login)
             )
-        ) ) { //if there was no mistake in the querry so if result is true
+        ) ) { //if there was NO MISTAKE in the querry so if result is true (regardless of no of returned records)
         $no_of_rows = $result->num_rows;
-        if( $no_of_rows > 0 ) {    //if result is more than 0 records most probably 1
+        if( $no_of_rows > 0 ) {    //if result is more than 0 records most probably 1, so login was found
+           
+            //we turn result record into associative array where index instead   of number is the actual column name in the database
+            $row = $result->fetch_assoc();      
 
-            //set in session that we are logged in
-            $_SESSION['loggedin'] = true;
+            //check if passwords match with password_verify() function that checkes enetred password against hashed pass in database and returns boolean
+           if ( password_verify($password, $row['pass']) ) {
 
-            $row = $result->fetch_assoc();      //we turn result record into into associative array where index instead   of number is the actual column name in the database
-            
-            //save user name in the session which is a global container for values stored on server accesible betwwen different php scripts
-            $_SESSION['id'] = $row['id'];
-            $_SESSION['user'] = $row['user'];
-            $_SESSION['drewno'] = $row['drewno'];
-            $_SESSION['kamien'] = $row['kamien'];
-            $_SESSION['zboze'] = $row['zboze'];
-            $_SESSION['email'] = $row['email'];
-            $_SESSION['dnipremium'] = $row['dnipremium'];
-            
+                //set in session that we are logged in
+                $_SESSION['loggedin'] = true;
 
-            //GARBAGE CLEAN 
-            //remove error message from session memory if we logged in
-            unset($_SESSION['error']);
-            //always clear results from memory at the end
-            $result->free_result();
+                //save user name in the session which is a global container for values stored on server accesible betwwen different php scripts
+                $_SESSION['id'] = $row['id'];
+                $_SESSION['user'] = $row['user'];
+                $_SESSION['drewno'] = $row['drewno'];
+                $_SESSION['kamien'] = $row['kamien'];
+                $_SESSION['zboze'] = $row['zboze'];
+                $_SESSION['email'] = $row['email'];
+                $_SESSION['dnipremium'] = $row['dnipremium'];
+                
 
-            //redirect to what u want to show
-            header('Location: game.php');
-            //we dnt use exit() because we want to close connection still
+                //GARBAGE CLEAN 
+                //remove error message from session memory if we logged in
+                unset($_SESSION['error']);
+                //always clear results from memory at the end
+                $result->free_result();
+                //redirect to what u want to show
+                header('Location: game.php');
+                //we dnt use exit() because that wud terminate code here and we want to close connection still
+           } else {
+               //if the user exists but wrong password 
+                $_SESSION['error'] = '<span style="color:red">Wrong password</span>';
+                header('Location: index.php');
+            }
         } else {
-
-            $_SESSION['error'] = '<span style="color:red">Nieprawidłowy login lub hasło</span>';
+            //user doesnt exist
+            $_SESSION['error'] = '<span style="color:red">User doesn\'t exist</span>';
             header('Location: index.php');
-            //we dnt use exit() because we want to close connection still
+            //we dnt use exit() because that wud terminate code here and we want to close connection still
         }
     }
 
