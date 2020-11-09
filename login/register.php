@@ -92,10 +92,50 @@ if(isset($_POST['email'])) { //isset returns true even if field is empty so afte
 
             throw new Exception(mysqli_connect_errno());
             
+            //CONNECTION SUCCESSFULL
             } else {
-              //  go back to around 1:30h
+                //8. CHECK IF EMAIL EXISTS
+                $result = $connection->query("SELECT id FROM uzytkownicy WHERE email='$email'");
 
-                //close connection
+                //throw exception if there was error in the querry
+                if (!$result) throw new Exception($connection->error);
+                //check how many rows returned - if more than 0 then email already exists
+                $how_many_emails = $result->num_rows;
+                if( $how_many_emails>0 ) {
+                    $all_ok = false;
+                    $_SESSION['err_email'] = 'Email already exists';
+                }
+
+                //9.CHECK IF NICKNAME EXISTS ALREADY
+                $result = $connection->query("SELECT id FROM uzytkownicy WHERE user='$nick'");
+
+                //throw exception if there was error in the querry
+                if (!$result) throw new Exception($connection->error);
+                //check how many rows returned - if more than 0 then email already exists
+                $how_many_nicknames = $result->num_rows;
+                if( $how_many_nicknames>0 ) {
+                    $all_ok = false;
+                    $_SESSION['err_nick'] = 'Username already exists';
+                }
+
+                //10. ALL TESTS ARE PASSED - INSERT USER TO DB
+                if ( $all_ok == true ) {
+                    //all good we can register user
+                    if( $connection->query(
+                        "INSERT INTO uzytkownicy VALUES (NULL, '$nick', '$hashed_password', '$email', 100, 100, 100, 14)"
+                    ) ) { //SUCCESS
+                        $_SESSION['registration_success'] = true;
+                        header('Location: welcome.php');
+                    } else { //ERROR
+                        throw new Exception($connection->error);
+                    }
+
+
+
+                    //redirect to page thank you for registration
+                };
+
+                //CLOSE CONNECTION
                 $connection->close();
             }
 
@@ -104,14 +144,6 @@ if(isset($_POST['email'])) { //isset returns true even if field is empty so afte
         echo '<span style="color:red;">Server error</span>';
         echo "<br />Error log: $err"; //this should be deleted in production so it deosnt show it in the browser
     }
-
-    //ALL TESTS ARE PASSED
-    if ( $all_ok == true ) {
-        //all good we can register user
-        
-        //redirect to page thank you for registration
-    };
-
 
 }
 
