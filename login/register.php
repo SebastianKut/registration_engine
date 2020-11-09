@@ -129,17 +129,13 @@ if ( isset($_POST['terms']) ) $_SESSION['form_terms'] = true;
                 if ( $all_ok == true ) {
                     //all good we can register user
                     if( $connection->query(
-                        "INSERT INTO uzytkownicy VALUES (NULL, '$nick', '$hashed_password', '$email', 100, 100, 100, 14)"
+                        "INSERT INTO uzytkownicy VALUES (NULL, '$nick', '$hashed_password', '$email', 100, 100, 100, now() + INTERVAL 14 DAY )" //now() - returns current time and date then INTERVAL 14 DAY adds 14 days to it
                     ) ) { //SUCCESS
                         $_SESSION['registration_success'] = true;
                         header('Location: welcome.php');
                     } else { //ERROR
                         throw new Exception($connection->error);
                     }
-
-
-
-                    //redirect to page thank you for registration
                 };
 
                 //CLOSE CONNECTION
