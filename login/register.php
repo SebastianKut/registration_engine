@@ -1,7 +1,5 @@
 <?php
 
-//sectret key 6LcKROAZAAAAAHQUbfrRXUZq7oBNuHvgX4FXApvi
-
 session_start();
 
 if ( (isset($_SESSION['loggedin'])) && ($_SESSION['loggedin'] == true) ) {
@@ -78,6 +76,15 @@ if(isset($_POST['email'])) { //isset returns true even if field is empty so afte
         $all_ok = false;
         $_SESSION['err_captcha'] = "Confirm you are not a robot";
     } 
+
+//REMEMBER VALUES ENTERED INTO FORM
+
+$_SESSION['form_nick'] = $nick;
+$_SESSION['form_email'] = $email;
+$_SESSION['form_password1'] = $password1;
+$_SESSION['form_password2'] = $password2;
+if ( isset($_POST['terms']) ) $_SESSION['form_terms'] = true;
+
 
 //7. Check if enterend login exists in the database
 
@@ -169,7 +176,13 @@ if(isset($_POST['email'])) { //isset returns true even if field is empty so afte
 <body>
 
 <form method="post"> 
-    Nickname: <br/> <input type="text" name="nick"> <br/> 
+    Nickname: <br/> <input type="text" name="nick" value="<?php
+    //set the value to the text that was entered already
+    if ( isset($_SESSION['form_nick']) ) {
+        echo $_SESSION['form_nick'];
+        unset($_SESSION['form_nick']);
+    }
+    ?>"><br/> 
 
     <?php
     if (isset($_SESSION['err_nick'])) {
@@ -178,7 +191,13 @@ if(isset($_POST['email'])) { //isset returns true even if field is empty so afte
     }
     ?>
 
-    E-mail: <br/> <input type="text" name="email"> <br/> 
+    E-mail: <br/> <input type="text" name="email" value="<?php
+    //set the value to the text that was entered already
+    if ( isset($_SESSION['form_email']) ) {
+        echo $_SESSION['form_email'];
+        unset($_SESSION['form_email']);
+    }
+    ?>"> <br/> 
 
     <?php
     if (isset($_SESSION['err_email'])) {
@@ -187,7 +206,13 @@ if(isset($_POST['email'])) { //isset returns true even if field is empty so afte
     }
     ?>
 
-    Password: <br/> <input type="password" name="password1"> <br/> 
+    Password: <br/> <input type="password" name="password1" value="<?php
+    //set the value to the text that was entered already
+    if ( isset($_SESSION['form_password1']) ) {
+        echo $_SESSION['form_password1'];
+        unset($_SESSION['form_password1']);
+    }
+    ?>"> <br/> 
 
     <?php
     if (isset($_SESSION['err_password'])) {
@@ -196,10 +221,22 @@ if(isset($_POST['email'])) { //isset returns true even if field is empty so afte
     }
     ?>
 
-    Repeat password: <br/> <input type="password" name="password2"> <br/>
+    Repeat password: <br/> <input type="password" name="password2" value="<?php
+    //set the value to the text that was entered already
+    if ( isset($_SESSION['form_password2']) ) {
+        echo $_SESSION['form_password2'];
+        unset($_SESSION['form_password2']);
+    }
+    ?>"> <br/>
     
     <label>
-        <input type="checkbox" name="terms" />I accept terms
+        <input type="checkbox" name="terms" <?php
+    //set the value to the text that was entered already
+    if ( isset($_SESSION['form_terms']) ) {
+        echo "checked";
+        unset($_SESSION['form_terms']);  
+    }
+    ?>/>I accept terms
     </label>
     <?php
     if (isset($_SESSION['err_terms'])) {
