@@ -28,6 +28,7 @@ if ( !isset($_SESSION['logged_id']) ) {
             unset($_SESSION['bad_attempt']);
         } else {
             $_SESSION['bad_attempt'] = true;
+            $_SESSION['entered_login'] = $_POST['login'];
             header('Location: admin.php');
             exit();
         }

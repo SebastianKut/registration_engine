@@ -15,15 +15,29 @@ if ( isset($_POST['email']) ) {
         
         //CONNECT TO DATABASE FIRST
         require_once 'database.php'; //we dnt have to require config.php because database.php requires it already
+        //FIRST CHECK IF EMAIL EXISTS
+         //1. Prepare the query
+         $query = $db->prepare( 'SELECT * FROM users WHERE email = :email' );
+         //2.Bind the value to the placeholder from query (pass 3 parameters (where, what, what type))
+         $query->bindValue( ':email', $email, PDO::PARAM_STR ); 
+         //3.Execute the query
+         $query->execute();
+            //using rowCount we check if given email returned any records
+         if ( ($query->rowCount()) > 0 ) {
+            $_SESSION['email_exists'] = $email;
+            header('Location: index.php');
+         } else {
+            //INSERT EMAIL TO DB
+            //1. Prepare the query
+            $query = $db->prepare( 'INSERT INTO users VALUES (NULL, :email)' );
+            //2.Bind the value to the placeholder from query (pass 3 parameters (where, what, what type))
+            $query->bindValue( ':email', $email, PDO::PARAM_STR ); 
+            //3.Execute the query
+            $query->execute();
 
-        //1. Prepare the query
-        $query = $db->prepare( 'INSERT INTO users VALUES (NULL, :email)' );
-        //2.Bind the value to the placeholder from query (pass 3 parameters (where, what, what type))
-        $query->bindValue( ':email', $email, PDO::PARAM_STR ); 
-        //3.Execute the query
-        $query->execute();
+            //we dnt have to close connection using PDO because it gets closed at the end of php script when PDO object no longer exists. If the script was super long we can close connection by making PDO object = NULL
+         }
 
-        //we dnt have to close connection using PDO because it gets closed at the end of php script when PDO object no longer exists. If the script was super long we can close connection by making PDO object = NULL
     }
 
 } else {

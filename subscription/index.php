@@ -40,8 +40,11 @@ session_start();
                         echo '<p>This is not a correct email adddress</p>';
                         unset( $_SESSION['entered_email'] );
                     }
+                    if ( isset($_SESSION['email_exists']) ) {
+                        echo "<p>{$_SESSION['email_exists']} already exists. Enter another email</p>";
+                        unset( $_SESSION['email_exists'] );
+                    }
                     ?>
-
                 </form>
             </article>
         </main>
